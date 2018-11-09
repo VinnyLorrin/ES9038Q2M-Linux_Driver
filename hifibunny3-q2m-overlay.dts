@@ -1,0 +1,38 @@
+// Definitions for hifibunny3 Q2M
+/dts-v1/;
+/plugin/;
+
+/ {
+	compatible = "brcm,bcm2708";
+
+	fragment@1 {
+		target = <&sound>;
+		frag0: __overlay__ {
+			compatible = "tuxiong,hifibunny3-q2m";
+			i2s-controller = <&i2s>;
+			status = "okay";
+		};
+	};
+
+	fragment@2 {
+		target = <&i2s>;
+		frag1:__overlay__ {
+			status = "okay";
+		};
+	};
+
+	fragment@3 {
+		target = <&i2c1>;
+		__overlay__ {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			status = "okay";
+			hifibunny:hifibunny3-codec@48 {
+				#sound-dai-cells = <0>;
+				compatible = "tuxiong,hifibunny3-codec";
+				reg = <0x48>;
+				status = "okay";
+			};
+		};
+	};
+};
