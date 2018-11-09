@@ -40,7 +40,7 @@ static const struct reg_default hifibunny3_codec_reg_defaults[] = {
 	{ES9038Q2M_DEEMP_DOP,0x48},
 	{ES9038Q2M_GPIO_CONFIG,0x55},
 	{ES9038Q2M_MASTER_MODE,0xA0},
-	{ES9038Q2M_SOFT_START,0x80},
+	{ES9038Q2M_SOFT_START,0x8D},
 	//Disable ASRC
 	{ES9038Q2M_GENERAL_CONFIG_0,0x54},
 	//Disable amp supply
@@ -149,7 +149,7 @@ static int hifibunny3_codec_hw_params(struct snd_pcm_substream *substream, struc
 	snd_soc_write(codec, ES9038Q2M_DEEMP_DOP, 0x48);
 	snd_soc_write(codec, ES9038Q2M_GPIO_CONFIG, 0x55);
 	snd_soc_write(codec, ES9038Q2M_MASTER_MODE,0xA0);
-	snd_soc_write(codec, ES9038Q2M_SOFT_START,0x80);
+	snd_soc_write(codec, ES9038Q2M_SOFT_START,0x8D);
 	snd_soc_write(codec, ES9038Q2M_GENERAL_CONFIG_0,0x54);
 	snd_soc_write(codec, ES9038Q2M_GENERAL_CONFIG_1,0x00);
 	snd_soc_write(codec, ES9038Q2M_INPUT_CONFIG, iface);
