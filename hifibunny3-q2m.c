@@ -1,5 +1,5 @@
 /*
- * ASoC Driver for hifibunny q2m
+ * ASoC Driver for hifibunny3 q2m
  *
  * Author: Satoru Kawase
  * Modified by:
@@ -25,16 +25,17 @@
 #include <sound/soc.h>
 #include <sound/pcm.h>
 #include <sound/pcm_params.h>
-
+#include <linux/gpio/consumer.h>
 #include "hifibunny3-codec.h"
 
-
+struct gpio_desc *rst_gpio;
+struct gpio_desc *pwd_gpio;
 static int snd_rpi_hifibunny3_q2m_init(struct snd_soc_pcm_runtime *rtd)
 {
 	struct snd_soc_codec *codec = rtd->codec;
 
 	/* Device ID */
-	dev_info(codec->dev, "Device ID : %02X\n", 2);
+	dev_info(codec->dev, "Device ID : %02X\n", 3);
 
 	/* API revision */
 	dev_info(codec->dev, "API revision : %02X\n", 1);
@@ -83,6 +84,40 @@ static struct snd_soc_card snd_rpi_hifibunny3_q2m = {
 	.num_links = ARRAY_SIZE(snd_rpi_hifibunny3_q2m_dai)
 };
 
+static int snd_rpi_hifibunny3_set_bias_level(struct snd_soc_card *card, struct snd_soc_dapm_context *dapm, enum snd_soc_bias_level level)
+{
+	struct snd_soc_pcm_runtime *rtd;
+	struct snd_soc_dai *codec_dai;
+	rtd = snd_soc_get_pcm_runtime(card, card->dai_link[0].name);
+	codec_dai = rtd->codec_dai;
+	if (dapm->dev != codec_dai->dev)
+		return 0;
+	switch (level)
+	{
+		case SND_SOC_BIAS_OFF:
+			gpiod_set_value_cansleep(pwd_gpio, 1);
+			gpiod_set_value_cansleep(rst_gpio, 1);
+			printk("Card bias level -> OFF!");
+			break;
+		case SND_SOC_BIAS_STANDBY:
+			gpiod_set_value_cansleep(rst_gpio, 1);
+			gpiod_set_value_cansleep(pwd_gpio, 0);
+			printk("Card bias level -> STANDBY!");
+			break;
+		case SND_SOC_BIAS_PREPARE:
+			gpiod_set_value_cansleep(pwd_gpio, 0);
+			mdelay(100);
+			gpiod_set_value_cansleep(rst_gpio, 0);
+			printk("Card bias level -> PREPARE!");
+			break;
+		case SND_SOC_BIAS_ON:
+			gpiod_set_value_cansleep(pwd_gpio, 0);
+			gpiod_set_value_cansleep(rst_gpio, 0);
+			printk("Card bias level -> ON!");
+			break;
+	}
+	return 0;
+}
 
 static int snd_rpi_hifibunny3_q2m_probe(struct platform_device *pdev)
 {
@@ -112,6 +147,9 @@ static int snd_rpi_hifibunny3_q2m_probe(struct platform_device *pdev)
 		dai->dai_fmt     = SND_SOC_DAIFMT_I2S
 					| SND_SOC_DAIFMT_NB_NF
 					| SND_SOC_DAIFMT_CBM_CFM;
+		rst_gpio = devm_gpiod_get_optional(&pdev->dev, "rst", GPIOD_OUT_HIGH);
+		pwd_gpio = devm_gpiod_get_optional(&pdev->dev, "pwd", GPIOD_OUT_HIGH);
+		snd_rpi_hifibunny3_q2m.set_bias_level = snd_rpi_hifibunny3_set_bias_level;
 	}
 
 	/* Wait for registering codec driver */

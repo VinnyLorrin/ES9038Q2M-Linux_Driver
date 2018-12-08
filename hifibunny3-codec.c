@@ -38,9 +38,9 @@ struct hifibunny3_codec_priv {
 static const struct reg_default hifibunny3_codec_reg_defaults[] = {
 	{ES9038Q2M_INPUT_CONFIG,0xC0},
 	{ES9038Q2M_DEEMP_DOP,0x48},
-	{ES9038Q2M_GPIO_CONFIG,0x55},
+	{ES9038Q2M_GPIO_CONFIG,0xFF},
 	{ES9038Q2M_MASTER_MODE,0xA0},
-	{ES9038Q2M_SOFT_START,0x8D},
+	{ES9038Q2M_SOFT_START,0x8C},
 	//Disable ASRC
 	{ES9038Q2M_GENERAL_CONFIG_0,0x54},
 	//Disable amp supply
@@ -66,7 +66,7 @@ static bool hifibunny3_codec_readable(struct device *dev, unsigned int reg)
 
 static bool hifibunny3_codec_volatile(struct device *dev, unsigned int reg)
 {
-	return false;
+	return true;
 }
 
 
@@ -147,12 +147,12 @@ static int hifibunny3_codec_hw_params(struct snd_pcm_substream *substream, struc
 			return -EINVAL;
 	}
 	snd_soc_write(codec, ES9038Q2M_DEEMP_DOP, 0x48);
-	snd_soc_write(codec, ES9038Q2M_GPIO_CONFIG, 0x55);
+	snd_soc_write(codec, ES9038Q2M_GPIO_CONFIG, 0xFF);
 	snd_soc_write(codec, ES9038Q2M_MASTER_MODE,0xA0);
-	snd_soc_write(codec, ES9038Q2M_SOFT_START,0x8D);
+	snd_soc_write(codec, ES9038Q2M_SOFT_START,0x8C);
 	snd_soc_write(codec, ES9038Q2M_GENERAL_CONFIG_0,0x54);
 	snd_soc_write(codec, ES9038Q2M_GENERAL_CONFIG_1,0x00);
-	snd_soc_write(codec, ES9038Q2M_INPUT_CONFIG, iface);
+	snd_soc_write(codec, ES9038Q2M_INPUT_CONFIG, 0xC0);
 	//Set NCO divier
 	switch(params_rate(params))
 	{
@@ -289,16 +289,12 @@ static int hifibunny3_codec_dac_mute(struct snd_soc_dai *dai, int mute)
 	if(mute)
 	{
 		snd_soc_write(dai->codec, ES9038Q2M_FILTER, genSet | 0x01);
-		snd_soc_write(dai->codec, ES9038Q2M_GENERAL_CONFIG_1, 0x40);
-		mdelay(100);
 	}
 	return 0;
 }
 static int hifibunny3_codec_dac_unmute(struct snd_soc_dai *dai)
 {
 	uint8_t genSet = snd_soc_read(dai->codec, ES9038Q2M_FILTER);
-	snd_soc_write(dai->codec, ES9038Q2M_GENERAL_CONFIG_1, 0x00);
-	mdelay(100);
 	snd_soc_write(dai->codec, ES9038Q2M_FILTER, genSet & 0xFE);
 	return 0;
 }
@@ -321,8 +317,6 @@ static int hifibunny3_codec_dai_trigger(struct snd_pcm_substream *substream, int
 		case SNDRV_PCM_TRIGGER_START:
 		case SNDRV_PCM_TRIGGER_RESUME:
 		case SNDRV_PCM_TRIGGER_PAUSE_RELEASE:
-			snd_soc_write(dai->codec, ES9038Q2M_GENERAL_CONFIG_1, 0x00);
-			mdelay(100);
 			break;
 		case SNDRV_PCM_TRIGGER_STOP:
 		case SNDRV_PCM_TRIGGER_SUSPEND:
@@ -360,10 +354,58 @@ static struct snd_soc_dai_driver hifibunny3_codec_dai = {
 	.ops = &hifibunny3_codec_dai_ops,
 };
 
+static const struct snd_soc_dapm_widget hifibunny3_dapm_widgets[] = {
+	SND_SOC_DAPM_DAC("DACL", NULL, SND_SOC_NOPM, 0, 0),
+	SND_SOC_DAPM_DAC("DACR", NULL, SND_SOC_NOPM, 0, 0),
+
+	SND_SOC_DAPM_OUTPUT("OUTL"),
+	SND_SOC_DAPM_OUTPUT("OUTR"),
+};
+
+static const struct snd_soc_dapm_route hifibunny3_dapm_routes[] = {
+	{ "DACL", NULL, "Playback" },
+	{ "DACR", NULL, "Playback" },
+	{ "OUTL", NULL, "DACL" },
+	{ "OUTR", NULL, "DACR" },
+};
+static int es9038q2m_set_bias_level(struct snd_soc_codec *codec, enum snd_soc_bias_level level)
+{
+	switch (level)
+	{
+		case SND_SOC_BIAS_OFF:
+			snd_soc_write(codec, ES9038Q2M_AUTO_CAL,0x04); //Bias low, turn off opamp
+			snd_soc_write(codec, ES9038Q2M_GPIO_INV, 0xC0);//GPIO low, turn off pwr
+			printk("DAC bias level -> OFF!");
+			break;
+		case SND_SOC_BIAS_STANDBY:
+			snd_soc_write(codec, ES9038Q2M_AUTO_CAL,0x04); //Bias low, turn off opamp
+			snd_soc_write(codec, ES9038Q2M_GPIO_INV, 0x00);//GPIO high, turn on pwr
+			printk("DAC bias level -> STANDBY!");
+			break;
+		case SND_SOC_BIAS_PREPARE:
+			snd_soc_write(codec, ES9038Q2M_GPIO_INV, 0x00);//GPIO hi, turn on pwr
+			mdelay(100);
+			snd_soc_write(codec, ES9038Q2M_AUTO_CAL,0x05); //Bias hi, turn on opamp
+			printk("DAC bias level -> PREPARE!");
+			break;
+		case SND_SOC_BIAS_ON:
+			snd_soc_write(codec, ES9038Q2M_GPIO_INV, 0x00);//GPIO hi, turn on pwr
+			snd_soc_write(codec, ES9038Q2M_AUTO_CAL,0x05); //Bias hi, turn on opamp
+			printk("DAC bias level -> ON!");
+			break;
+	}
+	return 0;
+}
 static struct snd_soc_codec_driver hifibunny3_codec_codec_driver = {
+	.set_bias_level = es9038q2m_set_bias_level,
+	.idle_bias_off = true,
 	.component_driver = {
 		.controls         = hifibunny3_codec_controls,
 		.num_controls     = ARRAY_SIZE(hifibunny3_codec_controls),
+		.dapm_widgets	  = hifibunny3_dapm_widgets,
+		.num_dapm_widgets = ARRAY_SIZE(hifibunny3_dapm_widgets),
+		.dapm_routes      = hifibunny3_dapm_routes,
+		.num_dapm_routes  = ARRAY_SIZE(hifibunny3_dapm_routes),
 	}
 };
 
