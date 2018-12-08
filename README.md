@@ -101,4 +101,6 @@ Supports volume control and DoP, tested on Moode Audio. SoX resampling needs to 
 
 DAC is setup in MASTER mode with NCO to support both 44.1KHz and 48KHz family with a single crystal. 
 
-Crystal freq is assumed to be 49.152MHz, if other freq are used, ES9038Q2M_NCO_0~ES9038Q2M_NCO_4 values need to be adjusted. 
+Crystal freq is assumed to be 49.152MHz, if other freq are used, ES9038Q2M_NCO_0~ES9038Q2M_NCO_4 values need to be adjusted.
+
+ES9038Q2M datasheet can be found at http://file2.dzsc.com/product/18/05/25/829029_170233543.pdf
