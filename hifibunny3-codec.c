@@ -374,22 +374,22 @@ static int es9038q2m_set_bias_level(struct snd_soc_codec *codec, enum snd_soc_bi
 	{
 		case SND_SOC_BIAS_OFF:
 			snd_soc_write(codec, ES9038Q2M_AUTO_CAL,0x04); //Bias low, turn off opamp
-			snd_soc_write(codec, ES9038Q2M_GPIO_INV, 0xC0);//GPIO low, turn off pwr
+			snd_soc_write(codec, ES9038Q2M_GPIO_INV, 0x00);//GPIO high, turn off pwr
 			printk("DAC bias level -> OFF!");
 			break;
 		case SND_SOC_BIAS_STANDBY:
 			snd_soc_write(codec, ES9038Q2M_AUTO_CAL,0x04); //Bias low, turn off opamp
-			snd_soc_write(codec, ES9038Q2M_GPIO_INV, 0x00);//GPIO high, turn on pwr
+			snd_soc_write(codec, ES9038Q2M_GPIO_INV, 0xC0);//GPIO low, turn on pwr
 			printk("DAC bias level -> STANDBY!");
 			break;
 		case SND_SOC_BIAS_PREPARE:
-			snd_soc_write(codec, ES9038Q2M_GPIO_INV, 0x00);//GPIO hi, turn on pwr
+			snd_soc_write(codec, ES9038Q2M_GPIO_INV, 0xC0);//GPIO low, turn on pwr
 			mdelay(100);
 			snd_soc_write(codec, ES9038Q2M_AUTO_CAL,0x05); //Bias hi, turn on opamp
 			printk("DAC bias level -> PREPARE!");
 			break;
 		case SND_SOC_BIAS_ON:
-			snd_soc_write(codec, ES9038Q2M_GPIO_INV, 0x00);//GPIO hi, turn on pwr
+			snd_soc_write(codec, ES9038Q2M_GPIO_INV, 0xC0);//GPIO low, turn on pwr
 			snd_soc_write(codec, ES9038Q2M_AUTO_CAL,0x05); //Bias hi, turn on opamp
 			printk("DAC bias level -> ON!");
 			break;
