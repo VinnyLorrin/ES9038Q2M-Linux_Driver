@@ -90,7 +90,7 @@ static SOC_ENUM_SINGLE_DECL(hifibunny3_fir_filter_type_enum,
 
 /* Control */
 static const struct snd_kcontrol_new hifibunny3_codec_controls[] = {
-SOC_DOUBLE_R_TLV("Digital Playback Volume", ES9038Q2M_VOLUME1, ES9038Q2M_VOLUME2,
+SOC_DOUBLE_R_TLV("Master Playback Volume", ES9038Q2M_VOLUME1, ES9038Q2M_VOLUME2,
 		 0, 255, 1, volume_tlv),
 
 SOC_ENUM("DSP Program Route", hifibunny3_fir_filter_type_enum),
