@@ -75,14 +75,14 @@ static const DECLARE_TLV_DB_SCALE(volume_tlv, -12750, 50, 1);
 
 /* Filter Type */
 static const char * const fir_filter_type_texts[] = {
-	"brick wall",
-	"corrected min phase fast",
-	"reserved",
-	"apodizing fast",
-	"min phase slow",
-	"min phase fast",
-	"linear phase slow",
 	"linear phase fast",
+	"linear phase slow",
+	"min phase fast",
+	"min phase slow",
+	"apodizing fast",
+	"reserved",
+	"corrected min phase fast",
+	"brick wall",
 };
 
 static SOC_ENUM_SINGLE_DECL(hifibunny3_fir_filter_type_enum,
@@ -93,7 +93,7 @@ static const struct snd_kcontrol_new hifibunny3_codec_controls[] = {
 SOC_DOUBLE_R_TLV("Digital Playback Volume", ES9038Q2M_VOLUME1, ES9038Q2M_VOLUME2,
 		 0, 255, 1, volume_tlv),
 
-SOC_ENUM("FIR Filter", hifibunny3_fir_filter_type_enum),
+SOC_ENUM("DSP Program Route", hifibunny3_fir_filter_type_enum),
 };
 
 
