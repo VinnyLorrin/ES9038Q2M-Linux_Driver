@@ -101,6 +101,7 @@ static int snd_rpi_hifibunny3_set_bias_level(struct snd_soc_card *card, struct s
 			break;
 		case SND_SOC_BIAS_STANDBY:
 			gpiod_set_value_cansleep(rst_gpio, 1);
+			mdelay(100);
 			gpiod_set_value_cansleep(pwd_gpio, 0);
 			printk("Card bias level -> STANDBY!");
 			break;

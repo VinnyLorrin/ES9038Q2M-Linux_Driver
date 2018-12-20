@@ -370,6 +370,7 @@ static const struct snd_soc_dapm_route hifibunny3_dapm_routes[] = {
 };
 static int es9038q2m_set_bias_level(struct snd_soc_codec *codec, enum snd_soc_bias_level level)
 {
+	mdelay(100);//Delay opamp operation, allow power amp to operate first
 	switch (level)
 	{
 		case SND_SOC_BIAS_OFF:
@@ -379,6 +380,7 @@ static int es9038q2m_set_bias_level(struct snd_soc_codec *codec, enum snd_soc_bi
 			break;
 		case SND_SOC_BIAS_STANDBY:
 			snd_soc_write(codec, ES9038Q2M_AUTO_CAL,0x04); //Bias low, turn off opamp
+			mdelay(100);
 			snd_soc_write(codec, ES9038Q2M_GPIO_INV, 0x00);//GPIO low, turn on pwr
 			printk("DAC bias level -> STANDBY!");
 			break;
