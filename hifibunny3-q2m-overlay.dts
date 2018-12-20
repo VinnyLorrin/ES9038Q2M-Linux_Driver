@@ -10,8 +10,8 @@
 		frag0: __overlay__ {
 			compatible = "tuxiong,hifibunny3-q2m";
 			i2s-controller = <&i2s>;
-			rst-gpios = <&gpio 22 0>;
-			pwd-gpios = <&gpio 27 0>;
+			rst-gpios = <&gpio 23 0>;
+			pwd-gpios = <&gpio 24 0>;
 			status = "okay";
 		};
 	};
