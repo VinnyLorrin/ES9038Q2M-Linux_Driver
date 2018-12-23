@@ -84,16 +84,44 @@ static const char * const fir_filter_type_texts[] = {
 	"corrected min phase fast",
 	"brick wall",
 };
+static const unsigned int fir_filter_type_values[] = {
+	0,
+	1,
+	2,
+	3,
+	4,
+	6,
+	7,
+};
+static SOC_VALUE_ENUM_SINGLE_DECL(hifibunny3_fir_filter_type_enum,
+				  ES9038Q2M_FILTER, 5, 0xE0,
+				  fir_filter_type_texts,
+				  fir_filter_type_values);
 
-static SOC_ENUM_SINGLE_DECL(hifibunny3_fir_filter_type_enum,
-				ES9038Q2M_FILTER , 5, fir_filter_type_texts);
-
+static const char * const hifibunny3_deemphasis_texts[] = {
+	"Bypass",
+	"32kHz",
+	"44.1kHz",
+	"48kHz",
+};
+static const unsigned int hifibunny3_deemphasis_values[] = {
+	0,
+	1,
+	2,
+	3,
+};
+static SOC_VALUE_ENUM_SINGLE_DECL(hifibunny3_deemphasis,
+				  ES9038Q2M_DEEMP_DOP, 4, 0x30,
+				  hifibunny3_deemphasis_texts,
+				  hifibunny3_deemphasis_values);
 /* Control */
 static const struct snd_kcontrol_new hifibunny3_codec_controls[] = {
 SOC_DOUBLE_R_TLV("Master Playback Volume", ES9038Q2M_VOLUME1, ES9038Q2M_VOLUME2,
 		 0, 255, 1, volume_tlv),
-
+SOC_DOUBLE("Master Playback Switch", ES9038Q2M_FILTER, 0, 0, 1, 1),
 SOC_ENUM("DSP Program Route", hifibunny3_fir_filter_type_enum),
+SOC_ENUM("Deemphasis Route", hifibunny3_deemphasis),
+SOC_SINGLE("DoP Playback Switch", ES9038Q2M_DEEMP_DOP, 3, 1, 1)
 };
 
 
