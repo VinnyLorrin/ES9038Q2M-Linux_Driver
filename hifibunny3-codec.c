@@ -102,9 +102,8 @@ static SOC_VALUE_ENUM_SINGLE_DECL(hifibunny3_fir_filter_type_enum,
 static const struct snd_kcontrol_new hifibunny3_codec_controls[] = {
 SOC_DOUBLE_R_TLV("Master Playback Volume", ES9038Q2M_VOLUME1, ES9038Q2M_VOLUME2,
 		 0, 255, 1, volume_tlv),
-SOC_DOUBLE("Master Playback Switch", ES9038Q2M_FILTER, 0, 0, 1, 1),
 SOC_ENUM("DSP Program Route", hifibunny3_fir_filter_type_enum),
-SOC_SINGLE("DoP Playback Switch", ES9038Q2M_DEEMP_DOP, 3, 1, 1)
+SOC_SINGLE("DoP Playback Switch", ES9038Q2M_DEEMP_DOP, 3, 1, 0)
 };
 
 
@@ -157,13 +156,13 @@ static int hifibunny3_codec_hw_params(struct snd_pcm_substream *substream, struc
 		default:
 			return -EINVAL;
 	}
-	snd_soc_write(codec, ES9038Q2M_DEEMP_DOP, 0x48);
-	snd_soc_write(codec, ES9038Q2M_GPIO_CONFIG, 0xFF);
-	snd_soc_write(codec, ES9038Q2M_MASTER_MODE,0xA0);
-	snd_soc_write(codec, ES9038Q2M_SOFT_START,0x8C);
-	snd_soc_write(codec, ES9038Q2M_GENERAL_CONFIG_0,0x54);
-	snd_soc_write(codec, ES9038Q2M_GENERAL_CONFIG_1,0x00);
-	snd_soc_write(codec, ES9038Q2M_INPUT_CONFIG, 0xC0);
+	//snd_soc_write(codec, ES9038Q2M_DEEMP_DOP, 0x48);
+	//snd_soc_write(codec, ES9038Q2M_GPIO_CONFIG, 0xFF);
+	//snd_soc_write(codec, ES9038Q2M_MASTER_MODE,0xA0);
+	//snd_soc_write(codec, ES9038Q2M_SOFT_START,0x8C);
+	//snd_soc_write(codec, ES9038Q2M_GENERAL_CONFIG_0,0x54);
+	//snd_soc_write(codec, ES9038Q2M_GENERAL_CONFIG_1,0x00);
+	snd_soc_write(codec, ES9038Q2M_INPUT_CONFIG, iface);
 	//Set NCO divier
 	switch(params_rate(params))
 	{
