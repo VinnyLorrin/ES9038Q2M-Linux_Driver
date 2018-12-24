@@ -40,7 +40,7 @@ static const struct reg_default hifibunny3_codec_reg_defaults[] = {
 	{ES9038Q2M_DEEMP_DOP,0x48},
 	{ES9038Q2M_GPIO_CONFIG,0xFF},
 	{ES9038Q2M_MASTER_MODE,0x80},
-	{ES9038Q2M_SOFT_START,0x8C},
+	{ES9038Q2M_SOFT_START,0x0C},
 	//Disable ASRC
 	{ES9038Q2M_GENERAL_CONFIG_0,0x54},
 	//Disable amp supply
@@ -379,24 +379,30 @@ static int es9038q2m_set_bias_level(struct snd_soc_codec *codec, enum snd_soc_bi
 	{
 		case SND_SOC_BIAS_OFF:
 			snd_soc_write(codec, ES9038Q2M_AUTO_CAL,0x04); //Bias low, turn off opamp
-			snd_soc_write(codec, ES9038Q2M_GPIO_INV, 0xC0);//GPIO high, turn off pwr
+			snd_soc_write(codec, ES9038Q2M_GPIO_INV, 0xC0);//GPIO low, turn off pwr
+			snd_soc_write(codec, ES9038Q2M_SOFT_START, 0x0C); // ramp DAC output to gnd
 			printk("DAC bias level -> OFF!");
 			break;
 		case SND_SOC_BIAS_STANDBY:
 			snd_soc_write(codec, ES9038Q2M_AUTO_CAL,0x04); //Bias low, turn off opamp
-			mdelay(100);
-			snd_soc_write(codec, ES9038Q2M_GPIO_INV, 0x00);//GPIO low, turn on pwr
+			mdelay(50);
+			snd_soc_write(codec, ES9038Q2M_GPIO_INV, 0x00);//GPIO high, turn on pwr
+			mdelay(50);
+			snd_soc_write(codec, ES9038Q2M_SOFT_START, 0x8C); // ramp DAC output to 0.5*AVCC
 			printk("DAC bias level -> STANDBY!");
 			break;
 		case SND_SOC_BIAS_PREPARE:
-			snd_soc_write(codec, ES9038Q2M_GPIO_INV, 0x00);//GPIO low, turn on pwr
-			mdelay(100);
-			snd_soc_write(codec, ES9038Q2M_AUTO_CAL,0x05); //Bias hi, turn on opamp
+			snd_soc_write(codec, ES9038Q2M_AUTO_CAL,0x05); //Bias high, turn on opamp
+			mdelay(50);
+			snd_soc_write(codec, ES9038Q2M_GPIO_INV, 0x00);//GPIO high, turn on pwr
+			mdelay(50);
+			snd_soc_write(codec, ES9038Q2M_SOFT_START, 0x8C); // ramp DAC output to 0.5*AVCC
 			printk("DAC bias level -> PREPARE!");
 			break;
 		case SND_SOC_BIAS_ON:
-			snd_soc_write(codec, ES9038Q2M_GPIO_INV, 0x00);//GPIO low, turn on pwr
-			snd_soc_write(codec, ES9038Q2M_AUTO_CAL,0x05); //Bias hi, turn on opamp
+			snd_soc_write(codec, ES9038Q2M_AUTO_CAL,0x05); //Bias high, turn on opamp
+			snd_soc_write(codec, ES9038Q2M_GPIO_INV, 0x00);//GPIO high, turn on pwr
+			snd_soc_write(codec, ES9038Q2M_SOFT_START, 0x8C); // ramp DAC output to 0.5*AVCC
 			printk("DAC bias level -> ON!");
 			break;
 	}
@@ -447,7 +453,7 @@ static int hifibunny3_codec_probe(struct device *dev, struct regmap *regmap)
 	regmap_write(regmap, ES9038Q2M_DEEMP_DOP,0x48);
 	regmap_write(regmap, ES9038Q2M_GPIO_CONFIG,0xFF);
 	regmap_write(regmap, ES9038Q2M_MASTER_MODE,0xA0);
-	regmap_write(regmap, ES9038Q2M_SOFT_START,0x8C);
+	regmap_write(regmap, ES9038Q2M_SOFT_START,0x0C);
 	regmap_write(regmap, ES9038Q2M_GENERAL_CONFIG_0,0x54);
 	regmap_write(regmap, ES9038Q2M_GENERAL_CONFIG_1,0x40);
 	msleep(10);
